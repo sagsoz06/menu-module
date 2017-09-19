@@ -3,21 +3,26 @@
 namespace Modules\Menu\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Events\BuildingSidebar;
+use Modules\Core\Traits\CanGetSidebarClassForModule;
 use Modules\Core\Traits\CanPublishConfiguration;
 use Modules\Menu\Blade\MenuDirective;
 use Modules\Menu\Entities\Menu;
 use Modules\Menu\Entities\Menuitem;
+use Modules\Menu\Events\Handlers\RegisterMenuSidebar;
 use Modules\Menu\Repositories\Cache\CacheMenuDecorator;
 use Modules\Menu\Repositories\Cache\CacheMenuItemDecorator;
 use Modules\Menu\Repositories\Eloquent\EloquentMenuItemRepository;
 use Modules\Menu\Repositories\Eloquent\EloquentMenuRepository;
+use Modules\Menu\Repositories\MenuItemRepository;
+use Modules\Menu\Repositories\MenuRepository;
 use Nwidart\Menus\MenuBuilder as Builder;
 use Nwidart\Menus\Facades\Menu as MenuFacade;
 use Nwidart\Menus\MenuItem as PingpongMenuItem;
 
 class MenuServiceProvider extends ServiceProvider
 {
-    use CanPublishConfiguration;
+    use CanPublishConfiguration, CanGetSidebarClassForModule;
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -37,6 +42,11 @@ class MenuServiceProvider extends ServiceProvider
         $this->app->bind('menu.menu.directive', function () {
             return new MenuDirective();
         });
+
+        $this->app['events']->listen(
+            BuildingSidebar::class,
+            $this->getSidebarClassForModule('menu', RegisterMenuSidebar::class)
+        );
     }
 
     /**
@@ -67,9 +77,7 @@ class MenuServiceProvider extends ServiceProvider
      */
     private function registerBindings()
     {
-        $this->app->bind(
-            'Modules\Menu\Repositories\MenuRepository',
-            function () {
+        $this->app->bind(MenuRepository::class, function () {
                 $repository = new EloquentMenuRepository(new Menu());
 
                 if (! config('app.cache')) {
@@ -80,9 +88,7 @@ class MenuServiceProvider extends ServiceProvider
             }
         );
 
-        $this->app->bind(
-            'Modules\Menu\Repositories\MenuItemRepository',
-            function () {
+        $this->app->bind(MenuItemRepository::class, function () {
                 $repository = new EloquentMenuItemRepository(new Menuitem());
 
                 if (! config('app.cache')) {
@@ -172,11 +178,15 @@ class MenuServiceProvider extends ServiceProvider
      */
     private function registerMenus()
     {
-        if (! $this->app['asgard.isInstalled']) {
+        if ($this->app['asgard.isInstalled'] === false ||
+            $this->app['asgard.onBackend'] === true ||
+            $this->app->runningInConsole() === true
+        ) {
             return;
         }
-        $menu = $this->app->make('Modules\Menu\Repositories\MenuRepository');
-        $menuItem = $this->app->make('Modules\Menu\Repositories\MenuItemRepository');
+
+        $menu = $this->app->make(MenuRepository::class);
+        $menuItem = $this->app->make(MenuItemRepository::class);
         foreach ($menu->allOnline() as $menu) {
             $menuTree = $menuItem->getTreeForMenu($menu->id);
             MenuFacade::create($menu->name, function (Builder $menu) use ($menuTree) {
