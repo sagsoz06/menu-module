@@ -78,25 +78,25 @@ class MenuServiceProvider extends ServiceProvider
     private function registerBindings()
     {
         $this->app->bind(MenuRepository::class, function () {
-            $repository = new EloquentMenuRepository(new Menu());
+                $repository = new EloquentMenuRepository(new Menu());
 
-            if (! config('app.cache')) {
-                return $repository;
+                if (! config('app.cache')) {
+                    return $repository;
+                }
+
+                return new CacheMenuDecorator($repository);
             }
-
-            return new CacheMenuDecorator($repository);
-        }
         );
 
         $this->app->bind(MenuItemRepository::class, function () {
-            $repository = new EloquentMenuItemRepository(new Menuitem());
+                $repository = new EloquentMenuItemRepository(new Menuitem());
 
-            if (! config('app.cache')) {
-                return $repository;
+                if (! config('app.cache')) {
+                    return $repository;
+                }
+
+                return new CacheMenuItemDecorator($repository);
             }
-
-            return new CacheMenuItemDecorator($repository);
-        }
         );
     }
 
