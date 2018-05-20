@@ -70,7 +70,7 @@ final class MenuItemUriGenerator
         $translation = $page->translate($lang);
 
         if ($translation === null) {
-            return $page->translate(config('app.fallback_locale'))->uri;
+            return $page->translate(config('app.fallback_locale'))->slug;
         }
 
         return $translation->slug;
