@@ -3,7 +3,6 @@
 namespace Modules\Menu\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Modules\Core\Events\BuildingSidebar;
 use Modules\Core\Traits\CanGetSidebarClassForModule;
 use Modules\Core\Traits\CanPublishConfiguration;
@@ -79,25 +78,25 @@ class MenuServiceProvider extends ServiceProvider
     private function registerBindings()
     {
         $this->app->bind(MenuRepository::class, function () {
-                $repository = new EloquentMenuRepository(new Menu());
+            $repository = new EloquentMenuRepository(new Menu());
 
-                if (! config('app.cache')) {
-                    return $repository;
-                }
-
-                return new CacheMenuDecorator($repository);
+            if (! config('app.cache')) {
+                return $repository;
             }
+
+            return new CacheMenuDecorator($repository);
+        }
         );
 
         $this->app->bind(MenuItemRepository::class, function () {
-                $repository = new EloquentMenuItemRepository(new Menuitem());
+            $repository = new EloquentMenuItemRepository(new Menuitem());
 
-                if (! config('app.cache')) {
-                    return $repository;
-                }
-
-                return new CacheMenuItemDecorator($repository);
+            if (! config('app.cache')) {
+                return $repository;
             }
+
+            return new CacheMenuItemDecorator($repository);
+        }
         );
     }
 
@@ -109,10 +108,11 @@ class MenuServiceProvider extends ServiceProvider
     public function addItemToMenu(Menuitem $item, Builder $menu)
     {
         if ($this->hasChildren($item)) {
-            $target = $item->link_type != 'external' ? $item->locale . '/' . $item->uri : $item->url;
+            $localisedUri = ltrim(parse_url(\LaravelLocalization::localizeURL($item->uri), PHP_URL_PATH), '/');
+            $target = $item->link_type != 'external' ? $localisedUri : $item->url;
             $this->addChildrenToMenu($item->title, $target, $item->items, $menu, ['icon' => $item->icon, 'target' => $item->target]);
         } else {
-            $localisedUri = ltrim(parse_url(LaravelLocalization::localizeURL($item->uri), PHP_URL_PATH), '/');
+            $localisedUri = ltrim(parse_url(\LaravelLocalization::localizeURL($item->uri), PHP_URL_PATH), '/');
             $target = $item->link_type != 'external' ? $localisedUri : $item->url;
             $menu->url(
                 $target,
@@ -156,10 +156,12 @@ class MenuServiceProvider extends ServiceProvider
     private function addSubItemToMenu(Menuitem $child, PingpongMenuItem $sub)
     {
         if ($this->hasChildren($child)) {
-            $target = $child->link_type != 'external' ? $child->locale . '/' . $child->uri : $child->url;
+            $localisedUri = ltrim(parse_url(\LaravelLocalization::localizeURL($child->uri), PHP_URL_PATH), '/');
+            $target = $child->link_type != 'external' ? $localisedUri : $child->url;
             $this->addChildrenToMenu($child->title, $target, $child->items, $sub);
         } else {
-            $target = $child->link_type != 'external' ? $child->locale . '/' . $child->uri : $child->url;
+            $localisedUri = ltrim(parse_url(\LaravelLocalization::localizeURL($child->uri), PHP_URL_PATH), '/');
+            $target = $child->link_type != 'external' ? $localisedUri : $child->url;
             $sub->url($target, $child->title, 0, ['icon' => $child->icon, 'target' => $child->target, 'class' => $child->class]);
         }
     }
