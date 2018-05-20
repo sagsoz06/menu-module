@@ -73,7 +73,7 @@ final class MenuItemUriGenerator
             return $page->translate(config('app.fallback_locale'))->uri;
         }
 
-        return $translation->uri;
+        return $translation->slug;
     }
 
     /**
