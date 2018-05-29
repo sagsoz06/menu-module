@@ -44,6 +44,6 @@ class RootMenuItemCreator
      */
     private function getEnabledLocales()
     {
-        return json_decode($this->setting->get('core::locales', '{"en"}'));
+        return json_decode($this->setting->get('core::locales', '{"tr"}'));
     }
 }
