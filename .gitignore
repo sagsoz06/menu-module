@@ -4,3 +4,4 @@ vendor/
 composer.lock
 Modules/
 build/
+*.DS_Store
