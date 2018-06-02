@@ -84,9 +84,9 @@ final class MenuItemUriGenerator
      */
     private function getParentUri($item, $linkPathArray)
     {
-        if ($item->uri === null) {
-            return implode('/', $linkPathArray);
-        }
+//        if ($item->uri === null) {
+//            return implode('/', $linkPathArray);
+//        }
 
         return $item->uri;
     }
