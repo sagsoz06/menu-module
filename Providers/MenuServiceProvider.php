@@ -47,6 +47,8 @@ class MenuServiceProvider extends ServiceProvider
             BuildingSidebar::class,
             $this->getSidebarClassForModule('menu', RegisterMenuSidebar::class)
         );
+
+        \Widget::register('menuItems', 'Modules\Menu\Widgets\MenuWidgets@getItemsByMenu');
     }
 
     /**
