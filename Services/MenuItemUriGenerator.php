@@ -64,7 +64,7 @@ final class MenuItemUriGenerator
      * @param $lang
      * @return string
      */
-    private function getPageSlug($id, $lang)
+    public function getPageSlug($id, $lang)
     {
         $page = $this->page->find($id);
         $translation = $page->translate($lang);
