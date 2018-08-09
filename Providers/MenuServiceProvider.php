@@ -9,6 +9,7 @@ use Modules\Core\Traits\CanPublishConfiguration;
 use Modules\Menu\Blade\MenuDirective;
 use Modules\Menu\Entities\Menu;
 use Modules\Menu\Entities\Menuitem;
+use Modules\Menu\Events\Handlers\ClearCache;
 use Modules\Menu\Events\Handlers\RegisterMenuSidebar;
 use Modules\Menu\Repositories\Cache\CacheMenuDecorator;
 use Modules\Menu\Repositories\Cache\CacheMenuItemDecorator;
@@ -100,6 +101,8 @@ class MenuServiceProvider extends ServiceProvider
                 return new CacheMenuItemDecorator($repository);
             }
         );
+
+        $this->app->events->subscribe(new ClearCache());
     }
 
     /**
